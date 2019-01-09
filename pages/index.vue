@@ -15,8 +15,25 @@
         <md-button>
           <nuxt-link class="md-primary" to="/register">Register</nuxt-link>
         </md-button>
+        <md-button class="md-accent" @click="showSidePanel = true">Categories</md-button>
       </div>
     </md-toolbar>
+
+    <md-progress-bar v-if="loading" md-mode='indeterminate'></md-progress-bar>
+
+    <md-drawer class="md-right" md-fixed :md-active.sync="showSidePanel">
+      <md-toolbar :md-elevation="1">
+        <span class="md-title">News Categories</span>
+      </md-toolbar>
+      <md-list>
+        <md-subheader class="md-primary">Categories</md-subheader>
+        <md-list-item v-for="(newsCategory, i) in newsCategories" :key="i" @click="loadCategory(newsCategory.path)">
+          <md-icon :class="newsCategory.path === category ? 'md-primary' : ''">{{newsCategory.icon}}</md-icon>
+          <span class="md-list-item-text">{{newsCategory.name}}</span>
+        </md-list-item>
+      </md-list>
+    </md-drawer>
+
     <!-- App Content -->
     <div class="md-layout-item md-size-90">
       <md-content class="md-layout md-gutter" style="background: #X007998; padding: 1em;">
@@ -62,12 +79,36 @@
 
 <script>
 export default {
+  data: () => ({
+    showSidePanel: false,
+    newsCategories: [
+      { name: 'Top Headlines', path: '', icon: 'today' },
+      { name: 'Technology', path: 'technology', icon: 'keyboard' },
+      { name: 'Business', path: 'business', icon: 'business-center' },
+      { name: 'Entertainment', path: 'entertainment', icon: 'weekend' },
+      { name: 'Health', path: 'health', icon: 'fastfood' },
+      { name: 'Science', path: 'science', icon: 'fingerprint' },
+      { name: 'Sports', path: 'sports', icon: 'golf-course' }
+    ]
+  }),
   async fetch({ store }) {
-    await store.dispatch('loadHeadlines', '/api/top-headlines?country=us')
+    await store.dispatch('loadHeadlines', `/api/top-headlines?country=us&category=${store.state.category}`)
   },
   computed: {
     headlines() {
       return this.$store.getters.headlines;
+    },
+    category() {
+      return this.$store.getters.category;
+    },
+    loading() {
+      return this.$store.getters.loading;
+    }
+  },
+  methods: {
+    loadCategory(category) {
+      this.$store.commit('setCategory', category)
+      this.$store.dispatch('loadHeadlines', `/api/top-headlines?country=us&category=${this.category}`)
     }
   }
 }
