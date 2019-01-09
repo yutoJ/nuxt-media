@@ -1,14 +1,31 @@
 <template>
-  <div class="md-layout md-alignment-center">
+  <div class="md-layout md-alignment-center" style="margin: 4em 0">
+    <!-- TOP Navigation -->
+    <md-toolbar class="fixed-toolbar" elevation="1">
+      <md-button class="md-icon-button">
+        <md-icon>menu</md-icon>
+      </md-button>
+      <nuxt-link class="md-primary md-title" to="/">
+        NuxtMedia
+      </nuxt-link>
+      <div class="md-toolbar-section-end">
+        <md-button>
+          <nuxt-link class="md-primary" to="/login">Login</nuxt-link>
+        </md-button>
+        <md-button>
+          <nuxt-link class="md-primary" to="/register">Register</nuxt-link>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <!-- App Content -->
     <div class="md-layout-item md-size-90">
       <md-content class="md-layout md-gutter" style="background: #X007998; padding: 1em;">
         <ul v-for="headline in headlines" :key="headline.id" class="md-layout-item md-large-size-25 md-medium-size-33 md-small-size-50 md-xsmall-size-100">
             <md-card style="margin-top: 2em;" md-with-hover>
               <md-ripple>
-                <md-card-media md-ratio="8:5">
+                <md-card-media>
                   <img :src="headline.urlToImage" :alt="headline.title">
                 </md-card-media>
-
                 <md-card-header>
                   <div class="md-title">
                     <a :href="headline.url" target="_blank">{{headline.title}}</a>
@@ -47,7 +64,6 @@
 export default {
   async asyncData({ app }) {
     const topHeadlines = await app.$axios.$get('/api/top-headlines?country=us')
-    console.log(topHeadlines)
     return { headlines: topHeadlines.articles }
   }
 }
@@ -56,5 +72,12 @@ export default {
 <style scoped>
   .small-icon {
     font-size: 18px !important;
+  }
+
+  .fixed-toolbar {
+    position: fixed;
+    top: 0;
+    z-index: 5;
+
   }
 </style>
