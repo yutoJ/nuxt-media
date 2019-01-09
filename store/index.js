@@ -34,6 +34,18 @@ export default () => (new Vuex.Store({
         const { articles } = await this.$axios.$get(apiUtl)
         commit('setLoading', false)
         commit('setHeadlines', articles)
+      },
+      async authenticateUser({ commit }, userPayload) {
+          try {
+              commit('setLoading', true)
+              const authUserData = await this.$axios.$post('/register/', userPayload)
+              console.log(authUserData)
+              commit('setLoading', false)
+          } catch (err) {
+              console.err(err)
+              commit('setLoading', false)
+          }
+
       }
   }
 }))

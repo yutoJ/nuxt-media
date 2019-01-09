@@ -60,11 +60,17 @@ module.exports = {
     "/api/": {
       target: 'https://newsapi.org/v2/',
       pathRewrite: { "^/api/": "" }
+    },
+    "/register/": {
+      target: `https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=${process.env.FIREBASE_API_KEY}`,
+      pathRewrite: { "^/register/": "" }
     }
   },
 
   env: {
-    NEWS_API_KEY: process.env.NEWS_API_KEY
+    NEWS_API_KEY: process.env.NEWS_API_KEY,
+    FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
+
   },
 
   /*
