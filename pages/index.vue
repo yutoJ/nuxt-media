@@ -2,7 +2,7 @@
   <div class="md-layout md-alignment-center" style="margin: 4em 0">
     <!-- TOP Navigation -->
     <md-toolbar class="fixed-toolbar" elevation="1">
-      <md-button class="md-icon-button">
+      <md-button class="md-icon-button" @click="showLeftSidepanel = true">
         <md-icon>menu</md-icon>
       </md-button>
       <nuxt-link class="md-primary md-title" to="/">
@@ -19,12 +19,31 @@
       </div>
     </md-toolbar>
 
-    <md-progress-bar v-if="loading" md-mode='indeterminate'></md-progress-bar>
+    <md-drawer md-fixed :md-active.sync="showLeftSidepanel">
+      <md-toolbar :md-elevation="1">
+        <span class="md-title">Pernonal Feed</span>
+      </md-toolbar>
+
+      <md-progress-bar v-if=loading md-mode='indeterminate'></md-progress-bar>
+
+      <md-field>
+        <label for="country">Country</label>
+        <md-select @input="changeCountry" :value="country" name="country" id="country">
+          <md-option value="us">United States</md-option>
+          <md-option value="ca">Canada</md-option>
+          <md-option value="de">Germany</md-option>
+          <md-option value="ru">Russia</md-option>
+        </md-select>
+      </md-field>
+    </md-drawer>
 
     <md-drawer class="md-right" md-fixed :md-active.sync="showSidePanel">
       <md-toolbar :md-elevation="1">
         <span class="md-title">News Categories</span>
       </md-toolbar>
+
+      <md-progress-bar v-if="loading" md-mode='indeterminate'></md-progress-bar>
+
       <md-list>
         <md-subheader class="md-primary">Categories</md-subheader>
         <md-list-item v-for="(newsCategory, i) in newsCategories" :key="i" @click="loadCategory(newsCategory.path)">
@@ -78,9 +97,12 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   data: () => ({
     showSidePanel: false,
+    showLeftSidepanel: false,
     newsCategories: [
       { name: 'Top Headlines', path: '', icon: 'today' },
       { name: 'Technology', path: 'technology', icon: 'keyboard' },
@@ -92,23 +114,23 @@ export default {
     ]
   }),
   async fetch({ store }) {
-    await store.dispatch('loadHeadlines', `/api/top-headlines?country=us&category=${store.state.category}`)
+    await store.dispatch('loadHeadlines', `/api/top-headlines?country=${store.state.country}&category=${store.state.category}`)
   },
-  computed: {
-    headlines() {
-      return this.$store.getters.headlines;
-    },
-    category() {
-      return this.$store.getters.category;
-    },
-    loading() {
-      return this.$store.getters.loading;
+  watch: {
+    async country() {
+      await this.$store.dispatch('loadHeadlines', `/api/top-headlines?country=${this.country}&category=${this.category}`)
     }
   },
+  computed: {
+    ...mapGetters(['headlines', 'category', 'country', 'loading'])
+  },
   methods: {
-    loadCategory(category) {
+    async loadCategory(category) {
       this.$store.commit('setCategory', category)
-      this.$store.dispatch('loadHeadlines', `/api/top-headlines?country=us&category=${this.category}`)
+      await this.$store.dispatch('loadHeadlines', `/api/top-headlines?country=${this.country}&category=${this.category}`)
+    },
+    async changeCountry(country) {
+      this.$store.commit('setCountry', country)
     }
   }
 }
