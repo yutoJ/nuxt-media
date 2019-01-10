@@ -5,13 +5,15 @@ export default () => (new Vuex.Store({
       headlines: [],
       category: '',
       loading: false,
-      country: 'us'
+      country: 'us',
+      token: ''
   },
   getters: {
       headlines: state => state.headlines,
       category: state => state.category,
       loading: state => state.loading,
-      country: state => state.country
+      country: state => state.country,
+      isAuthenticated: state => !!state.token,
   },
   mutations: {
       setHeadlines(state, headlines) {
@@ -25,6 +27,9 @@ export default () => (new Vuex.Store({
       },
       setCountry(state, country) {
         state.country = country;
+      },
+      setToken(state, token) {
+        state.token = token;
       }
   },
   actions: {
@@ -40,6 +45,7 @@ export default () => (new Vuex.Store({
               commit('setLoading', true)
               const authUserData = await this.$axios.$post('/register/', userPayload)
               console.log(authUserData)
+              commit('setToken', authUserData.idToken);
               commit('setLoading', false)
           } catch (err) {
               console.err(err)
