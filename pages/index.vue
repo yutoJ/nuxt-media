@@ -12,7 +12,7 @@
         <template v-if="isAuthenticated">
           <md-button>
             <!--<md-avatar><img :src="user.avatar" :alt="user.email"></md-avatar>-->
-            <md-avatar><img src="../assets/avatar.jpeg" :alt="user.email"></md-avatar>-->
+            <md-avatar><img src="~/assets/avatar.jpeg" :alt="user.email"></md-avatar>-->
             {{user.email}}
           </md-button>
           <md-button>Logout</md-button>

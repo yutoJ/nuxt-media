@@ -1,5 +1,6 @@
 import Vuex from 'vuex'
-import md5 from 'md5';
+import md5 from 'md5'
+import db from '~/plugins/firestore'
 
 export default () => (new Vuex.Store({
   state: {
@@ -49,13 +50,14 @@ export default () => (new Vuex.Store({
       async authenticateUser({ commit }, userPayload) {
           try {
               commit('setLoading', true)
-              const authUserData = await this.$axios.$post('/register/', userPayload)
+              const authUserData = await this.$axios.$post('/register/', userPayload);
               //const avatar = `http://gravatar.com/avatar/${md5(authUserData.email)}?d=identicon`
-              const avatar = '../assets/avatar.jpeg'
+              const avatar = '~/assets/avatar.jpeg';
               const user = { email: authUserData.email, avatar };
+              await db.collection('users').doc(userPayload.email).set(user);
               console.log(authUserData)
-              commit('setUser', user);
-              commit('setToken', authUserData.idToken);
+              commit('setUser', user)
+              commit('setToken', authUserData.idToken)
               commit('setLoading', false)
           } catch (err) {
               console.err(err)
