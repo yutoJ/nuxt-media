@@ -1,6 +1,7 @@
 import Vuex from 'vuex'
 import md5 from 'md5'
 import db from '~/plugins/firestore'
+import { saveUserData, clearUserData } from '~/utils'
 
 export default () => (new Vuex.Store({
   state: {
@@ -9,7 +10,8 @@ export default () => (new Vuex.Store({
       category: '',
       loading: false,
       country: 'us',
-      token: ''
+      token: '',
+      feed: []
   },
   getters: {
       user: state => state.user,
@@ -18,6 +20,7 @@ export default () => (new Vuex.Store({
       loading: state => state.loading,
       country: state => state.country,
       isAuthenticated: state => !!state.token,
+      feed: state => state.feed
   },
   mutations: {
       setUser(state, user) {
@@ -37,7 +40,12 @@ export default () => (new Vuex.Store({
       },
       setToken(state, token) {
         state.token = token;
-      }
+      },
+      setFeed(state, headlines) {
+        state.feed = headlines;
+      },
+      clearToken: state => (state.token = ''),
+      clearUser: state => (state.user = null)
   },
   actions: {
       async loadHeadlines({ commit }, apiUtl) {
@@ -46,6 +54,10 @@ export default () => (new Vuex.Store({
         const { articles } = await this.$axios.$get(apiUtl)
         commit('setLoading', false)
         commit('setHeadlines', articles)
+      },
+      async addHeadlineToFeed({ state }, headline) {
+        const feedRef = db.collection(`users/${state.user.email}/feed`).doc(headline.title)
+        await feedRef.set(headline)
       },
       async authenticateUser({ commit }, userPayload) {
           try {
@@ -61,18 +73,36 @@ export default () => (new Vuex.Store({
                 const loginRef = db.collection('users').doc(userPayload.email);
                 const loggedInUser = await loginRef.get();
                 user = loggedInUser.data();
-
               }
-
               console.log(authUserData)
               commit('setUser', user)
               commit('setToken', authUserData.idToken)
               commit('setLoading', false)
+              saveUserData(authUserData, user)
           } catch (err) {
               console.err(err)
               commit('setLoading', false)
           }
-
+      },
+      setLogoutTimer({ dispatch }, interval) {
+        setTimeout(() => dispatch('logoutUser'), interval)
+      },
+      logoutUser({ commit }) {
+        commit('clearToken')
+        commit('clearUser')
+        clearUserData()
+      },
+      async loadUserFeed({ state, commit }) {
+        if (state.user) {
+          const feedRef = db.collection(`users/${state.user.email}/feed`)
+          await feedRef.get().then(querySnapshot => {
+            let headlines = [];
+            querySnapshot.forEach(doc => {
+              headlines.push(doc.data())
+            })
+            commit('setFeed', headlines)
+          })
+        }
       }
   }
 }))

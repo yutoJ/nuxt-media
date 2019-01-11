@@ -15,7 +15,7 @@
             <md-avatar><img src="~/assets/avatar.jpeg" :alt="user.email"></md-avatar>-->
             {{user.email}}
           </md-button>
-          <md-button>Logout</md-button>
+          <md-button @click="logoutUser">Logout</md-button>
         </template>
         <template v-else>
           <md-button>
@@ -45,6 +45,21 @@
           <md-option value="ru">Russia</md-option>
         </md-select>
       </md-field>
+      <md-list class="md-triple-line" v-for="headline in feed" :key="headline.id">
+        <md-list-item>
+          <md-avatar><img :src="headline.urlToImage" :alt="headline.title"></md-avatar>
+          <div class="md-list-item-text">
+            <span><a :href="headline.url" target="_blank">{{headline.title}}</a></span>
+            <span>{{headline.source.name}}</span>
+            <span>View Comments</span>
+          </div>
+
+          <md-button class="md-icon-button md-list-action">
+            <md-icon class="md-accent">delete</md-icon>
+          </md-button>
+        </md-list-item>
+        <md-divider class="md-inset"></md-divider>
+      </md-list>
     </md-drawer>
 
     <md-drawer class="md-right" md-fixed :md-active.sync="showSidePanel">
@@ -91,7 +106,7 @@
                 </md-card-header>  
                 <md-card-content>{{headline.description}}</md-card-content>
                 <md-card-actions>
-                  <md-button class="md-icon-button">
+                  <md-button @click="addHeadlineToFeed(headline)" class="md-icon-button">
                     <md-icon>bookmark</md-icon>
                   </md-button>
                   <md-button class="md-icon-button">
@@ -120,11 +135,12 @@ export default {
       { name: 'Entertainment', path: 'entertainment', icon: 'weekend' },
       { name: 'Health', path: 'health', icon: 'fastfood' },
       { name: 'Science', path: 'science', icon: 'fingerprint' },
-      { name: 'Sports', path: 'sports', icon: 'golf-course' }
+      { name: 'Sports', path: 'sports', icon: 'golf-course' },
     ]
   }),
   async fetch({ store }) {
     await store.dispatch('loadHeadlines', `/api/top-headlines?country=${store.state.country}&category=${store.state.category}`)
+    await store.dispatch('loadUserFeed')
   },
   watch: {
     async country() {
@@ -132,7 +148,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['user', 'headlines', 'category', 'country', 'loading', 'isAuthenticated'])
+    ...mapGetters(['user', 'headlines', 'category', 'country', 'loading', 'isAuthenticated', 'feed'])
   },
   methods: {
     async loadCategory(category) {
@@ -141,6 +157,14 @@ export default {
     },
     async changeCountry(country) {
       this.$store.commit('setCountry', country)
+    },
+    async addHeadlineToFeed(headline) {
+      if (this.user) {
+        this.$store.dispatch('addHeadlineToFeed', headline)
+      }
+    },
+    logoutUser() {
+      this.$store.dispatch('logoutUser')
     }
   }
 }
