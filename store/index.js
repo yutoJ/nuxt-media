@@ -1,7 +1,9 @@
 import Vuex from 'vuex'
+import md5 from 'md5';
 
 export default () => (new Vuex.Store({
   state: {
+      user: null,
       headlines: [],
       category: '',
       loading: false,
@@ -9,6 +11,7 @@ export default () => (new Vuex.Store({
       token: ''
   },
   getters: {
+      user: state => state.user,
       headlines: state => state.headlines,
       category: state => state.category,
       loading: state => state.loading,
@@ -16,8 +19,11 @@ export default () => (new Vuex.Store({
       isAuthenticated: state => !!state.token,
   },
   mutations: {
+      setUser(state, user) {
+        state.user = user
+      },
       setHeadlines(state, headlines) {
-          state.headlines = headlines
+        state.headlines = headlines
       },
       setCategory(state, category) {
         state.category = category;
@@ -44,7 +50,11 @@ export default () => (new Vuex.Store({
           try {
               commit('setLoading', true)
               const authUserData = await this.$axios.$post('/register/', userPayload)
+              //const avatar = `http://gravatar.com/avatar/${md5(authUserData.email)}?d=identicon`
+              const avatar = '../assets/avatar.jpeg'
+              const user = { email: authUserData.email, avatar };
               console.log(authUserData)
+              commit('setUser', user);
               commit('setToken', authUserData.idToken);
               commit('setLoading', false)
           } catch (err) {

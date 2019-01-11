@@ -9,12 +9,22 @@
         NuxtMedia
       </nuxt-link>
       <div class="md-toolbar-section-end">
-        <md-button>
-          <nuxt-link class="md-primary" to="/login">Login</nuxt-link>
-        </md-button>
-        <md-button>
-          <nuxt-link class="md-primary" to="/register">Register</nuxt-link>
-        </md-button>
+        <template v-if="isAuthenticated">
+          <md-button>
+            <!--<md-avatar><img :src="user.avatar" :alt="user.email"></md-avatar>-->
+            <md-avatar><img src="../assets/avatar.jpeg" :alt="user.email"></md-avatar>-->
+            {{user.email}}
+          </md-button>
+          <md-button>Logout</md-button>
+        </template>
+        <template v-else>
+          <md-button>
+            <nuxt-link class="md-primary" to="/login">Login</nuxt-link>
+          </md-button>
+          <md-button>
+            <nuxt-link class="md-primary" to="/register">Register</nuxt-link>
+          </md-button>
+        </template>
         <md-button class="md-accent" @click="showSidePanel = true">Categories</md-button>
       </div>
     </md-toolbar>
@@ -122,7 +132,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['headlines', 'category', 'country', 'loading'])
+    ...mapGetters(['user', 'headlines', 'category', 'country', 'loading', 'isAuthenticated'])
   },
   methods: {
     async loadCategory(category) {
