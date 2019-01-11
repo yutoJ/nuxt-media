@@ -50,11 +50,20 @@ export default () => (new Vuex.Store({
       async authenticateUser({ commit }, userPayload) {
           try {
               commit('setLoading', true)
-              const authUserData = await this.$axios.$post('/register/', userPayload);
-              //const avatar = `http://gravatar.com/avatar/${md5(authUserData.email)}?d=identicon`
-              const avatar = '~/assets/avatar.jpeg';
-              const user = { email: authUserData.email, avatar };
-              await db.collection('users').doc(userPayload.email).set(user);
+              const authUserData = await this.$axios.$post(`/${userPayload.action}/`, userPayload);
+              let user;
+              if (userPayload.action === 'register') {
+                //const avatar = `http://gravatar.com/avatar/${md5(authUserData.email)}?d=identicon`
+                const avatar = '~/assets/avatar.jpeg';
+                user = { email: authUserData.email, avatar };
+                await db.collection('users').doc(userPayload.email).set(user);
+              } else {
+                const loginRef = db.collection('users').doc(userPayload.email);
+                const loggedInUser = await loginRef.get();
+                user = loggedInUser.data();
+
+              }
+
               console.log(authUserData)
               commit('setUser', user)
               commit('setToken', authUserData.idToken)
